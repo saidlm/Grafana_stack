@@ -1,0 +1,44 @@
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: timescaledb
+    hostname: timescaledb
+    environment:
+      - POSTGRES_PASSWORD=IntTimescaleDb
+      - TIMESCALEDB_TELEMETRY=off
+      #- TS_TUNE_MEMORY=1GB
+      #- TS_TUNE_NUM_CPUS=1
+      #- TS_TUNE_MAX_CONNS=20
+    volumes:
+      - timescaledb:/var/lib/postgresql/data
+    restart: unless-stopped
+      
+  grafana:
+    image: grafana/grafana-oss:9.5.1
+    container_name: grafana
+    hostname: grafana
+    depends_on:
+      - timescaledb
+    volumes:
+      - grafana:/var/lib/grafana
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+        
+  telegraf:
+    image: telegraf:1.26
+    container_name: telegraf
+    hostname: telegraf
+    depends_on:
+      - timescaledb
+    volumes:
+      - telegraf:/etc/telegraf:ro
+    ports:
+      - 8094:8094
+      - 8086:8086
+    restart: unless-stopped
+
+volumes:
+  grafana:
+  timescaledb:
+  telegraf:
